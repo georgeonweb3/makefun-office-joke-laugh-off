@@ -57,11 +57,17 @@ def main() -> None:
     # disk, not the string in memory — confirm the bytes landed.
     # No randomness, no clock, no I/O beyond the one write, so a
     # second run reproduces the same 116 bytes exactly.
+    encoded = ENTRY.encode("utf-8")
     with open(OUTPUT_PATH, "rb") as handle:
         written = handle.read()
-    assert written == ENTRY.encode("utf-8"), (
+    assert written == encoded, (
         f"entry.txt on disk differs from ENTRY: {written!r}"
     )
+    assert len(written) == len(encoded) == 116, (
+        f"entry.txt is {len(written)} bytes, expected 116"
+    )
+    assert not written.endswith(b"\n"), "entry.txt must not end with a newline"
+    assert written.decode("utf-8") == ENTRY, "entry.txt is not valid UTF-8 ENTRY text"
 
 
 if __name__ == "__main__":
