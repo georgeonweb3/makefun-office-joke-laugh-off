@@ -30,7 +30,7 @@ ENTRY = (
     "card signed by the whole floor, including the plant."
 )
 
-OUTPUT_PATH = os.environ.get("ENTRY_OUTPUT", "/output/entry.txt")
+OUTPUT_PATH = os.environ.get("ENTRY_OUTPUT") or "/output/entry.txt"
 
 # Gate from the competition's own kit (competition.yaml): entry.txt
 # must be UTF-8 text of 1 to 200 characters, not only whitespace.
@@ -68,6 +68,15 @@ def main() -> None:
     )
     assert not written.endswith(b"\n"), "entry.txt must not end with a newline"
     assert written.decode("utf-8") == ENTRY, "entry.txt is not valid UTF-8 ENTRY text"
+    # Final guard: the graded text must be plain printable text —
+    # no control characters at all, and no leading/trailing
+    # whitespace (checked here on the decoded file bytes, separate
+    # from the length asserts above).
+    decoded = written.decode("utf-8")
+    assert all(ord(ch) >= 0x20 or ch in "\t" for ch in decoded), (
+        "entry.txt contains a control character"
+    )
+    assert decoded == decoded.strip(), "entry.txt has leading/trailing whitespace"
 
 
 if __name__ == "__main__":
